@@ -1,0 +1,73 @@
+{
+	"name": "apollo-pusher-subscriptions",
+	"type": "module",
+	"version": "1.0.0",
+	"description": "A modern, configurable Apollo Link for handling GraphQL subscriptions via Pusher. Built with TypeScript and designed for Laravel Lighthouse.",
+	"author": "Stephen Jason Wang",
+	"license": "MIT",
+	"repository": "https://github.com/stephenjason89/apollo-pusher-subscriptions",
+	"keywords": [
+		"apollo",
+		"apollo-client",
+		"apollo-link",
+		"graphql",
+		"subscriptions",
+		"pusher",
+		"pusher-js",
+		"lighthouse",
+		"laravel",
+		"real-time",
+		"websockets",
+		"typescript"
+	],
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/esm/index.js",
+			"require": "./dist/cjs/index.js"
+		}
+	},
+	"main": "./dist/cjs/index.js",
+	"module": "./dist/esm/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"test": "bun test",
+		"build:esm": "tsc",
+		"build:cjs": "tsc --project tsconfig.cjs.json",
+		"build": "npm run build:esm && npm run build:cjs",
+		"watch": "tsc --watch",
+		"prepublishOnly": "npm run build",
+		"prepare": "husky",
+		"commitlint": "commitlint --edit"
+	},
+	"peerDependencies": {
+		"@apollo/client": "^4.0.0",
+		"pusher-js": "^7.0.0 || ^8.0.0",
+		"rxjs": "^7.0.0"
+	},
+	"devDependencies": {
+		"@antfu/eslint-config": "^3.16.0",
+		"@commitlint/cli": "^19.8.1",
+		"@commitlint/config-conventional": "^19.8.1",
+		"@semantic-release/changelog": "^6.0.3",
+		"@semantic-release/commit-analyzer": "^13.0.1",
+		"@semantic-release/git": "^10.0.1",
+		"@semantic-release/github": "^11.0.4",
+		"@semantic-release/npm": "^12.0.2",
+		"@semantic-release/release-notes-generator": "^14.0.3",
+		"@types/bun": "^1.2.20",
+		"conventional-changelog-conventionalcommits": "^8.0.0",
+		"eslint": "^9.33.0",
+		"husky": "^9.1.7",
+		"nano-staged": "^0.8.0",
+		"pusher-js": "^8.4.0",
+		"rxjs": "^7.8.2"
+	},
+	"nano-staged": {
+		"*.{js,cjs,mjs,ts,jsx,json,json5,tsx,vue,md}": "eslint --fix"
+	}
+}
