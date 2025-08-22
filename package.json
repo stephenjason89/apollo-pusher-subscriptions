@@ -68,6 +68,6 @@
 		"rxjs": "^7.8.2"
 	},
 	"nano-staged": {
-		"*.{js,cjs,mjs,ts,jsx,json,json5,tsx,vue,md}": "eslint --fix"
+		"*.{js,cjs,mjs,ts,jsx,json,json5,tsx,vue}": "eslint --fix"
 	}
 }

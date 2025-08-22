@@ -14,11 +14,11 @@ A modern, configurable Apollo Link for handling GraphQL subscriptions via Pusher
 ## 📦 Installation
 
 ```bash
-npm install apollo-pusher-subscriptions pusher-js
+npm install apollo-pusher-subscriptions @apollo/client pusher-js rxjs
 # or
-yarn add apollo-pusher-subscriptions pusher-js
+yarn add apollo-pusher-subscriptions @apollo/client pusher-js rxjs
 # or
-pnpm add apollo-pusher-subscriptions pusher-js
+pnpm add apollo-pusher-subscriptions @apollo/client pusher-js rxjs
 ```
 
 ## 🚀 Quick Start
@@ -26,50 +26,50 @@ pnpm add apollo-pusher-subscriptions pusher-js
 ### With Laravel Lighthouse (Default)
 
 ```typescript
-import { ApolloClient, InMemoryCache, ApolloLink } from '@apollo/client/core'
-import Pusher from 'pusher-js'
-import PusherLink from 'apollo-pusher-subscriptions'
+import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client/core";
+import Pusher from "pusher-js";
+import PusherLink from "apollo-pusher-subscriptions";
 
 // Configure Pusher
-const pusher = new Pusher('your-app-key', {
-	cluster: 'your-cluster',
-	// ... other Pusher options
-})
+const pusher = new Pusher("your-app-key", {
+  cluster: "your-cluster",
+  // ... other Pusher options
+});
 
 // Create the Pusher link
-const pusherLink = new PusherLink({ pusher })
+const pusherLink = new PusherLink({ pusher });
 
 // Create Apollo Client
 const client = new ApolloClient({
-	link: ApolloLink.from([
-		// ... other links (auth, error handling, etc.)
-		pusherLink,
-		httpLink, // Your HTTP link should come last
-	]),
-	cache: new InMemoryCache(),
-})
+  link: ApolloLink.from([
+    // ... other links (auth, error handling, etc.)
+    pusherLink,
+    httpLink, // Your HTTP link should come last
+  ]),
+  cache: new InMemoryCache(),
+});
 ```
 
 ### With Custom GraphQL Server
 
 ```typescript
 const pusherLink = new PusherLink({
-	pusher,
-	subscriptionPath: 'extensions.subscriptions.channel', // Custom path
-	eventName: 'graphql-subscription', // Custom event name
-	initialDataCondition: (data) => data.data !== null, // Custom condition
-})
+  pusher,
+  subscriptionPath: "extensions.subscriptions.channel", // Custom path
+  eventName: "graphql-subscription", // Custom event name
+  initialDataCondition: (data) => data.data !== null, // Custom condition
+});
 ```
 
 ## ⚙️ Configuration Options
 
 ```typescript
 interface PusherLinkOptions {
-	pusher: Pusher // Required: Pusher client instance
-	decompress?: (result: string) => GraphQLResponse // Optional: Decompression function
-	subscriptionPath?: string // Optional: Path to subscription channel
-	eventName?: string // Optional: Pusher event name
-	initialDataCondition?: (data: any) => boolean // Optional: When to pass initial data
+  pusher: Pusher; // Required: Pusher client instance
+  decompress?: (result: string) => GraphQLResponse; // Optional: Decompression function
+  subscriptionPath?: string; // Optional: Path to subscription channel
+  eventName?: string; // Optional: Pusher event name
+  initialDataCondition?: (data: any) => boolean; // Optional: When to pass initial data
 }
 ```
 
@@ -89,14 +89,15 @@ interface PusherLinkOptions {
 
 ```typescript
 // Default configuration works out of the box
-const pusherLink = new PusherLink({ pusher })
+const pusherLink = new PusherLink({ pusher });
 ```
 
 Your Lighthouse GraphQL schema:
 
 ```graphql
 type Subscription {
-	postUpdated(id: ID!): Post @subscription(class: "App\\GraphQL\\Subscriptions\\PostUpdated")
+  postUpdated(id: ID!): Post
+    @subscription(class: "App\\GraphQL\\Subscriptions\\PostUpdated")
 }
 ```
 
@@ -104,21 +105,21 @@ type Subscription {
 
 ```typescript
 const pusherLink = new PusherLink({
-	pusher,
-	subscriptionPath: 'extensions.hasura.channel',
-	eventName: 'hasura-subscription',
-})
+  pusher,
+  subscriptionPath: "extensions.hasura.channel",
+  eventName: "hasura-subscription",
+});
 ```
 
 ### Custom GraphQL Server
 
 ```typescript
 const pusherLink = new PusherLink({
-	pusher,
-	subscriptionPath: 'extensions.subscriptions.pusher_channel',
-	eventName: 'subscription-update',
-	initialDataCondition: (data) => Boolean(data.data),
-})
+  pusher,
+  subscriptionPath: "extensions.subscriptions.pusher_channel",
+  eventName: "subscription-update",
+  initialDataCondition: (data) => Boolean(data.data),
+});
 ```
 
 ## 💡 Usage Examples
@@ -126,53 +127,53 @@ const pusherLink = new PusherLink({
 ### Basic Subscription
 
 ```typescript
-import { gql } from '@apollo/client/core'
+import { gql } from "@apollo/client/core";
 
 const SUBSCRIPTION = gql`
-	subscription OnCommentAdded($postId: ID!) {
-		commentAdded(postId: $postId) {
-			id
-			content
-			user {
-				name
-			}
-		}
-	}
-`
+  subscription OnCommentAdded($postId: ID!) {
+    commentAdded(postId: $postId) {
+      id
+      content
+      user {
+        name
+      }
+    }
+  }
+`;
 
 // In your component/composable
 const { data, loading, error } = useSubscription(SUBSCRIPTION, {
-	variables: { postId: '1' },
-})
+  variables: { postId: "1" },
+});
 ```
 
 ### With Compression Support
 
 ```typescript
-import pako from 'pako' // or your preferred compression library
+import pako from "pako"; // or your preferred compression library
 
 const pusherLink = new PusherLink({
-	pusher,
-	decompress: (compressedResult: string) => {
-		const decompressed = pako.inflate(compressedResult, { to: 'string' })
-		return JSON.parse(decompressed)
-	},
-})
+  pusher,
+  decompress: (compressedResult: string) => {
+    const decompressed = pako.inflate(compressedResult, { to: "string" });
+    return JSON.parse(decompressed);
+  },
+});
 ```
 
 ### Advanced Configuration
 
 ```typescript
 const pusherLink = new PusherLink({
-	pusher,
-	subscriptionPath: 'meta.subscription.channel',
-	eventName: 'subscription-data',
-	initialDataCondition: (data) => {
-		// Only pass initial data if it's not empty and not an error
-		return data.data && !data.errors && Object.keys(data.data).length > 0
-	},
-	decompress: (result: string) => JSON.parse(atob(result)), // Base64 decode
-})
+  pusher,
+  subscriptionPath: "meta.subscription.channel",
+  eventName: "subscription-data",
+  initialDataCondition: (data) => {
+    // Only pass initial data if it's not empty and not an error
+    return data.data && !data.errors && Object.keys(data.data).length > 0;
+  },
+  decompress: (result: string) => JSON.parse(atob(result)), // Base64 decode
+});
 ```
 
 ## 🔧 Integration Patterns
@@ -181,38 +182,40 @@ const pusherLink = new PusherLink({
 
 ```typescript
 const authLink = new ApolloLink((operation, forward) => {
-	operation.setContext({
-		headers: {
-			authorization: `Bearer ${getToken()}`,
-		},
-	})
-	return forward(operation)
-})
+  operation.setContext({
+    headers: {
+      authorization: `Bearer ${getToken()}`,
+    },
+  });
+  return forward(operation);
+});
 
 const client = new ApolloClient({
-	link: ApolloLink.from([authLink, pusherLink, httpLink]),
-	cache: new InMemoryCache(),
-})
+  link: ApolloLink.from([authLink, pusherLink, httpLink]),
+  cache: new InMemoryCache(),
+});
 ```
 
 ### With Error Handling
 
 ```typescript
-import { ErrorLink } from '@apollo/client/link/error'
+import { ErrorLink } from "@apollo/client/link/error";
 
 const errorLink = new ErrorLink(({ graphQLErrors, networkError }) => {
-	if (graphQLErrors) {
-		graphQLErrors.forEach(({ message, locations, path }) =>
-			console.log(`GraphQL error: Message: ${message}, Location: ${locations}, Path: ${path}`),
-		)
-	}
-	if (networkError) console.log(`Network error: ${networkError}`)
-})
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({ message, locations, path }) =>
+      console.log(
+        `GraphQL error: Message: ${message}, Location: ${locations}, Path: ${path}`
+      )
+    );
+  }
+  if (networkError) console.log(`Network error: ${networkError}`);
+});
 
 const client = new ApolloClient({
-	link: ApolloLink.from([errorLink, pusherLink, httpLink]),
-	cache: new InMemoryCache(),
-})
+  link: ApolloLink.from([errorLink, pusherLink, httpLink]),
+  cache: new InMemoryCache(),
+});
 ```
 
 ### Framework-Specific Examples
@@ -222,49 +225,49 @@ const client = new ApolloClient({
 ```typescript
 // plugins/apollo.client.ts
 export default defineNuxtPlugin(() => {
-	const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
 
-	const pusher = new Pusher(config.public.pusherKey, {
-		cluster: config.public.pusherCluster,
-	})
+  const pusher = new Pusher(config.public.pusherKey, {
+    cluster: config.public.pusherCluster,
+  });
 
-	const pusherLink = new PusherLink({ pusher })
+  const pusherLink = new PusherLink({ pusher });
 
-	const client = new ApolloClient({
-		link: ApolloLink.from([pusherLink, httpLink]),
-		cache: new InMemoryCache(),
-	})
+  const client = new ApolloClient({
+    link: ApolloLink.from([pusherLink, httpLink]),
+    cache: new InMemoryCache(),
+  });
 
-	return {
-		provide: {
-			apollo: client,
-		},
-	}
-})
+  return {
+    provide: {
+      apollo: client,
+    },
+  };
+});
 ```
 
 #### React
 
 ```typescript
-import { ApolloProvider } from '@apollo/client'
+import { ApolloProvider } from "@apollo/client";
 
 const pusher = new Pusher(process.env.REACT_APP_PUSHER_KEY, {
   cluster: process.env.REACT_APP_PUSHER_CLUSTER,
-})
+});
 
-const pusherLink = new PusherLink({ pusher })
+const pusherLink = new PusherLink({ pusher });
 
 const client = new ApolloClient({
   link: ApolloLink.from([pusherLink, httpLink]),
   cache: new InMemoryCache(),
-})
+});
 
 function App() {
   return (
     <ApolloProvider client={client}>
       <YourApp />
     </ApolloProvider>
-  )
+  );
 }
 ```
 
@@ -282,10 +285,10 @@ function App() {
 The library automatically handles cleanup, but ensure you're properly unsubscribing:
 
 ```typescript
-const subscription = client.subscribe({ query: SUBSCRIPTION })
+const subscription = client.subscribe({ query: SUBSCRIPTION });
 
 // Later, when component unmounts or subscription is no longer needed
-subscription.unsubscribe()
+subscription.unsubscribe();
 ```
 
 ### TypeScript Issues
@@ -302,12 +305,12 @@ Enable debug mode for detailed logging:
 
 ```typescript
 // Enable Pusher logging
-Pusher.logToConsole = true
+Pusher.logToConsole = true;
 
-const pusher = new Pusher('key', {
-	cluster: 'cluster',
-	enabledTransports: ['ws', 'wss'],
-})
+const pusher = new Pusher("key", {
+  cluster: "cluster",
+  enabledTransports: ["ws", "wss"],
+});
 ```
 
 ## 📊 Performance Considerations
