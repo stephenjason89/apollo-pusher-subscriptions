@@ -2,7 +2,7 @@
 	"name": "apollo-pusher-subscriptions",
 	"type": "module",
 	"version": "1.0.1",
-	"description": "A modern, configurable Apollo Link for handling GraphQL subscriptions via Pusher. Built with TypeScript and designed for Laravel Lighthouse.",
+	"description": "A modern, configurable Apollo Link for handling GraphQL subscriptions over any Pusher-protocol client (pusher-js, BunPulse). Built with TypeScript and designed for Laravel Lighthouse.",
 	"author": "Stephen Jason Wang",
 	"license": "MIT",
 	"repository": "https://github.com/stephenjason89/apollo-pusher-subscriptions",
@@ -14,6 +14,7 @@
 		"subscriptions",
 		"pusher",
 		"pusher-js",
+		"bun-pulse",
 		"lighthouse",
 		"laravel",
 		"real-time",
@@ -49,6 +50,11 @@
 		"pusher-js": "^7.0.0 || ^8.0.0",
 		"rxjs": "^7.0.0"
 	},
+	"peerDependenciesMeta": {
+		"pusher-js": {
+			"optional": true
+		}
+	},
 	"devDependencies": {
 		"@antfu/eslint-config": "^3.16.0",
 		"@commitlint/cli": "^19.8.1",
@@ -60,6 +66,7 @@
 		"@semantic-release/npm": "^12.0.2",
 		"@semantic-release/release-notes-generator": "^14.0.3",
 		"@types/bun": "^1.2.20",
+		"bun-pulse": "^2.4.0",
 		"conventional-changelog-conventionalcommits": "^8.0.0",
 		"eslint": "^9.33.0",
 		"husky": "^9.1.7",

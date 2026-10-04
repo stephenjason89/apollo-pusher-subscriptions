@@ -1,5 +1,3 @@
-import type Pusher from 'pusher-js'
-import type { Channel } from 'pusher-js'
 import type { Observer } from 'rxjs'
 import { ApolloLink, type FetchResult, type Operation } from '@apollo/client/core'
 import { Observable } from '@apollo/client/utilities'
@@ -16,8 +14,22 @@ interface SubscriptionPayload {
 	result?: GraphQLResponse
 }
 
+/** Channel handle returned by `subscribe`; only `bind` is used. */
+interface SubscriptionChannel {
+	bind: (eventName: string, callback: (payload: SubscriptionPayload) => void) => unknown
+}
+
+/**
+ * Any Pusher-protocol client, such as `pusher-js` or `bun-pulse/client`.
+ * Only `subscribe` and `unsubscribe` are required.
+ */
+interface SubscriptionClient {
+	subscribe: (channelName: string) => SubscriptionChannel
+	unsubscribe: (channelName: string) => void
+}
+
 interface PusherLinkOptions {
-	pusher: Pusher
+	pusher: SubscriptionClient
 	decompress?: (result: string) => GraphQLResponse
 	subscriptionPath?: string
 	eventName?: string
@@ -25,7 +37,7 @@ interface PusherLinkOptions {
 }
 
 class PusherLink extends ApolloLink {
-	pusher: Pusher
+	pusher: SubscriptionClient
 	decompress: (result: string) => GraphQLResponse
 	subscriptionPath: string
 	eventName: string
@@ -33,7 +45,7 @@ class PusherLink extends ApolloLink {
 
 	constructor(options: PusherLinkOptions) {
 		super()
-		// Retain a handle to the Pusher client
+		// Retain a handle to the Pusher-protocol client
 		this.pusher = options.pusher
 
 		// Configuration options with Lighthouse defaults
@@ -41,7 +53,7 @@ class PusherLink extends ApolloLink {
 		this.eventName = options.eventName ?? 'lighthouse-subscription'
 		this.initialDataCondition
 			= options.initialDataCondition
-			?? ((data: RequestResult) => Boolean(data.data && Object.keys(data.data).length > 0))
+				?? ((data: RequestResult) => Boolean(data.data && Object.keys(data.data).length > 0))
 
 		if (options.decompress) {
 			this.decompress = options.decompress
@@ -58,7 +70,7 @@ class PusherLink extends ApolloLink {
 	override request(operation: Operation, forward: NextLink): Observable<RequestResult> {
 		return new Observable<RequestResult>((observer) => {
 			let subscriptionChannel: string | undefined
-			let pusherChannel: Channel
+			let pusherChannel: SubscriptionChannel
 
 			// Check the result of the operation
 			const resultObservable = forward(operation)
@@ -69,7 +81,7 @@ class PusherLink extends ApolloLink {
 					// Use configurable path to extract subscription channel
 					subscriptionChannel = this.getNestedValue(data?.extensions, this.subscriptionPath)
 					if (subscriptionChannel) {
-						// Set up the pusher subscription for updates from the server
+						// Set up the channel subscription for updates from the server
 						pusherChannel = this.pusher.subscribe(subscriptionChannel)
 						// Pass along the initial payload if condition is met
 						if (this.initialDataCondition(data)) {
@@ -134,4 +146,4 @@ class PusherLink extends ApolloLink {
 }
 
 export default PusherLink
-export type { PusherLinkOptions, SubscriptionPayload }
+export type { PusherLinkOptions, SubscriptionChannel, SubscriptionClient, SubscriptionPayload }
