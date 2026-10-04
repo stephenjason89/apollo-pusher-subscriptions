@@ -1,7 +1,7 @@
 {
 	"name": "apollo-pusher-subscriptions",
 	"type": "module",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"description": "A modern, configurable Apollo Link for handling GraphQL subscriptions over any Pusher-protocol client (pusher-js, BunPulse). Built with TypeScript and designed for Laravel Lighthouse.",
 	"author": "Stephen Jason Wang",
 	"license": "MIT",

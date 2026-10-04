@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/stephenjason89/apollo-pusher-subscriptions/compare/v1.0.1...v1.1.0) (2026-10-04)
+
+### 🚀 Features
+
+* accept any Pusher-protocol client, including bun-pulse/client ([#2](https://github.com/stephenjason89/apollo-pusher-subscriptions/issues/2)) ([2a87224](https://github.com/stephenjason89/apollo-pusher-subscriptions/commit/2a87224a474f6fe13b039dc47e41875dd0901214)), closes [#1](https://github.com/stephenjason89/apollo-pusher-subscriptions/issues/1)
+
 ## [1.0.1](https://github.com/stephenjason89/apollo-pusher-subscriptions/compare/v1.0.0...v1.0.1) (2025-08-22)
 
 ### 🐛 Bug Fixes
