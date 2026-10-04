@@ -1,6 +1,6 @@
 # apollo-pusher-subscriptions
 
-A modern, configurable Apollo Link for handling GraphQL subscriptions via Pusher. Built with TypeScript and designed for Laravel Lighthouse, but configurable for any GraphQL server that uses Pusher for real-time subscriptions.
+A modern, configurable Apollo Link for handling GraphQL subscriptions over any Pusher-protocol client, such as [pusher-js](https://github.com/pusher/pusher-js) or the [BunPulse](https://github.com/stephenjason89/bun-pulse) browser client. Built with TypeScript and designed for Laravel Lighthouse, but configurable for any GraphQL server that uses Pusher channels for real-time subscriptions.
 
 ## ✨ Features
 
@@ -8,18 +8,21 @@ A modern, configurable Apollo Link for handling GraphQL subscriptions via Pusher
 - ⚙️ **Configurable** - Works with Lighthouse out of the box, easily configurable for other GraphQL servers
 - 🔧 **Type Safe** - Full TypeScript support with proper interfaces
 - 🧹 **Memory Safe** - Proper cleanup of both Apollo and Pusher subscriptions
-- 📦 **Lightweight** - Zero dependencies beyond Apollo Client and Pusher JS
+- 📦 **Lightweight** - Zero dependencies beyond Apollo Client and your Pusher-protocol client
+- 🔌 **Client Agnostic** - Works with `pusher-js` or `bun-pulse/client`; anything with `subscribe`/`unsubscribe`
 - 🎯 **Battle Tested** - Used in production applications
 
 ## 📦 Installation
 
 ```bash
-npm install apollo-pusher-subscriptions @apollo/client pusher-js rxjs
+npm install apollo-pusher-subscriptions @apollo/client rxjs
 # or
-yarn add apollo-pusher-subscriptions @apollo/client pusher-js rxjs
+yarn add apollo-pusher-subscriptions @apollo/client rxjs
 # or
-pnpm add apollo-pusher-subscriptions @apollo/client pusher-js rxjs
+pnpm add apollo-pusher-subscriptions @apollo/client rxjs
 ```
+
+Then install the realtime client you use: `pusher-js` for Pusher (or any Pusher-compatible server), or `bun-pulse` for its bundled browser client.
 
 ## 🚀 Quick Start
 
@@ -50,6 +53,23 @@ const client = new ApolloClient({
 });
 ```
 
+### With BunPulse
+
+[BunPulse](https://github.com/stephenjason89/bun-pulse) ships a browser client that speaks the Pusher protocol without `pusher-js`:
+
+```typescript
+import BunPulseClient from "bun-pulse/client";
+import PusherLink from "apollo-pusher-subscriptions";
+
+const pusher = new BunPulseClient("your-app-key", {
+  wsHost: "ws.example.com",
+  forceTLS: true,
+  channelAuthorization: { endpoint: "/broadcasting/auth" },
+});
+
+const pusherLink = new PusherLink({ pusher });
+```
+
 ### With Custom GraphQL Server
 
 ```typescript
@@ -65,7 +85,7 @@ const pusherLink = new PusherLink({
 
 ```typescript
 interface PusherLinkOptions {
-  pusher: Pusher; // Required: Pusher client instance
+  pusher: SubscriptionClient; // Required: pusher-js, bun-pulse/client, or any { subscribe, unsubscribe }
   decompress?: (result: string) => GraphQLResponse; // Optional: Decompression function
   subscriptionPath?: string; // Optional: Path to subscription channel
   eventName?: string; // Optional: Pusher event name
@@ -77,7 +97,7 @@ interface PusherLinkOptions {
 
 | Option                 | Default                                                    | Description                                                               |
 | ---------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `pusher`               | -                                                          | **Required.** Your configured Pusher client instance                      |
+| `pusher`               | -                                                          | **Required.** Your configured Pusher-protocol client (`pusher-js`, `bun-pulse/client`, ...) |
 | `decompress`           | `undefined`                                                | Function to decompress compressed subscription payloads                   |
 | `subscriptionPath`     | `'lighthouse_subscriptions.channel'`                       | Dot-notation path to find the subscription channel in response extensions |
 | `eventName`            | `'lighthouse-subscription'`                                | Name of the Pusher event to listen for                                    |
@@ -315,7 +335,7 @@ const pusher = new Pusher("key", {
 
 ## 📊 Performance Considerations
 
-- **Connection Pooling**: Reuse the same Pusher instance across multiple PusherLink instances
+- **Connection Pooling**: Reuse the same client instance across multiple PusherLink instances
 - **Subscription Cleanup**: The library automatically handles cleanup, but always unsubscribe when components unmount
 - **Batching**: Consider using Apollo's batching for mutations while keeping subscriptions separate
 
